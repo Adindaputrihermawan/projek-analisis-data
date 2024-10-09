@@ -15,7 +15,12 @@ model = pickle.load(open(filename, 'rb'))
 st.title("Olist Customer Dashboard")
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
-customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
+try:
+    customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
+    print("Pengelompokan berhasil!")
+except Exception as e:
+    print(f"Terjadi kesalahan saat melakukan pengelompokan: {e}")
+
 
 # Memfilter pelanggan yang melakukan pembelian lebih dari satu kali (pelanggan loyal)
 loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
