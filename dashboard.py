@@ -3,7 +3,11 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 import pickle
+
+# Menampilkan direktori kerja saat ini
+st.write("Direktori kerja saat ini:", os.getcwd())
 
 # Load the model
 filename = 'CustomerRFM_model.sav'
@@ -14,10 +18,9 @@ st.title("Olist Customer Dashboard")
 
 # Memastikan df1 terdefinisi
 try:
-    # Asumsi df1, df2, df4, df5, df6 sudah terdefinisi sebelumnya
-    pass  # Menggunakan df1, df2, df4, df5, df6 yang sudah ada
-except NameError:
-    st.error("Dataframe df1, df2, df4, df5, atau df6 tidak terdefinisi.")
+    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
+except FileNotFoundError:
+    st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
     st.stop()
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
@@ -56,7 +59,12 @@ plt.title('Top 10 Customer States')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
-# Menghitung tipe pembayaran
+try:
+    df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_payments_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
 payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
 payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
 
@@ -71,8 +79,20 @@ plt.xlabel('Number of Unique Orders')
 plt.ylabel('Payment Type')
 st.pyplot(fig)
 
-# Menggabungkan data produk dengan kategori produk
-df10 = pd.merge(left=df5, right=df6, how="left", left_on="product_category_name", right_on="product_category_name")
+try:
+    df5 = pd.read_csv("dataset/olist_products_dataset.csv")
+    df6 = pd.read_csv("dataset/product_category_name_translation.csv")
+except FileNotFoundError:
+    st.error("File 'olist_products_dataset.csv' atau 'product_category_name_translation.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
+df10 = pd.merge(
+    left=df5,
+    right=df6,
+    how="left",
+    left_on="product_category_name",
+    right_on="product_category_name"
+)
 
 sum_order_items_df = df10.groupby("product_category_name_english")["product_id"].count().reset_index()
 sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
@@ -92,6 +112,12 @@ plt.ylabel('Product Category')
 
 # Display plot in Streamlit
 st.pyplot(fig)
+
+try:
+    df2 = pd.read_csv('dataset/olist_order_items_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_items_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
 
 # Mengatur judul dashboard
 st.title("Pendapatan tiap seller")
@@ -127,6 +153,9 @@ st.pyplot(fig)
 # Mengatur judul dashboard
 st.title("Analisis RFM")
 st.write("Analisis Recency, Frequency, dan Monetary dari data penjualan.")
+
+# Memuat dataset
+df2['shipping_limit_date'] = pd.to_datetime(df2['shipping_limit_date'], errors='coerce')
 
 # Menghitung RFM
 rfm_df = df2.groupby(by="order_id", as_index=False).agg({
@@ -181,3 +210,4 @@ st.pyplot(fig)
 # Menampilkan ringkasan statistik RFM
 st.subheader("Ringkasan Statistik RFM")
 st.write(rfm_df.describe())
+
