@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -59,17 +58,13 @@ plt.title('Top 10 Customer States')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
-try:
-    df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
-except FileNotFoundError:
-    st.error("File 'olist_order_payments_dataset.csv' tidak ditemukan di direktori 'dataset'.")
-    st.stop()
-
-payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
-payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
-
-# Streamlit App
+# Tipe Pembayaran
 st.title("Tipe Pembayaran")
+
+# Simulasi data pembayaran, karena tidak memuat CSV
+# Anda bisa mengganti ini dengan data yang sesuai dari df1 jika ada
+payment_data = df1.groupby('payment_type')['customer_id'].count().reset_index()
+payment_data.columns = ['payment_type', 'unique_orders']
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -79,56 +74,33 @@ plt.xlabel('Number of Unique Orders')
 plt.ylabel('Payment Type')
 st.pyplot(fig)
 
-try:
-    df5 = pd.read_csv("dataset/olist_products_dataset.csv")
-    df6 = pd.read_csv("dataset/product_category_name_translation.csv")
-except FileNotFoundError:
-    st.error("File 'olist_products_dataset.csv' atau 'product_category_name_translation.csv' tidak ditemukan di direktori 'dataset'.")
-    st.stop()
-
-df10 = pd.merge(
-    left=df5,
-    right=df6,
-    how="left",
-    left_on="product_category_name",
-    right_on="product_category_name"
-)
-
-sum_order_items_df = df10.groupby("product_category_name_english")["product_id"].count().reset_index()
-sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
-sum_order_items_df = sum_order_items_df.sort_values(by="products", ascending=False)
-top_product = sum_order_items_df.head(5)
-
-# Streamlit App
+# Menampilkan Top 5 Product Sales
 st.title("Top 5 Product Sales")
+
+# Simulasi data produk, karena tidak memuat CSV
+# Anda bisa mengganti ini dengan data yang sesuai dari df1 jika ada
+top_product = df1['product_category_name'].value_counts().nlargest(5).reset_index()
+top_product.columns = ['product_category_name', 'products']
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(18, 6))
 colors = ["#068DA9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
-sns.barplot(x="products", y="product_category_name_english", data=top_product, palette=colors, ax=ax)
+sns.barplot(x="products", y="product_category_name", data=top_product, palette=colors, ax=ax)
 plt.title('Top 5 Penjualan Tertinggi')
 plt.xlabel('Number of Customers')
 plt.ylabel('Product Category')
-
-# Display plot in Streamlit
 st.pyplot(fig)
-
-try:
-    df2 = pd.read_csv('dataset/olist_order_items_dataset.csv')
-except FileNotFoundError:
-    st.error("File 'olist_order_items_dataset.csv' tidak ditemukan di direktori 'dataset'.")
-    st.stop()
 
 # Mengatur judul dashboard
 st.title("Pendapatan tiap seller")
 st.write("Analisis pendapatan tiap seller ")
 
-# Filter seller secara interaktif
-unique_sellers = df2['seller_id'].unique()
+# Simulasi analisis pendapatan seller
+unique_sellers = df1['seller_id'].unique()
 selected_seller = st.selectbox('Pilih Seller', unique_sellers)
 
 # Memfilter data berdasarkan seller yang dipilih
-filtered_df = df2[df2['seller_id'] == selected_seller]
+filtered_df = df1[df1['seller_id'] == selected_seller]
 
 # Overview Penjualan Dinamis
 total_orders = filtered_df['order_id'].nunique()
@@ -154,11 +126,8 @@ st.pyplot(fig)
 st.title("Analisis RFM")
 st.write("Analisis Recency, Frequency, dan Monetary dari data penjualan.")
 
-# Memuat dataset
-df2['shipping_limit_date'] = pd.to_datetime(df2['shipping_limit_date'], errors='coerce')
-
 # Menghitung RFM
-rfm_df = df2.groupby(by="order_id", as_index=False).agg({
+rfm_df = df1.groupby(by="order_id", as_index=False).agg({
     "shipping_limit_date": "max",  # Mengambil tanggal order terakhir
     "order_id": "nunique",  # Menghitung jumlah order (order_id)
     "price": "sum"  # Menghitung jumlah revenue yang dihasilkan
@@ -169,11 +138,11 @@ rfm_df["max_order_timestamp"] = pd.to_datetime(rfm_df["max_order_timestamp"], er
 rfm_df["max_order_timestamp"] = rfm_df["max_order_timestamp"].dt.date
 
 # Menghitung recency
-recent_date = df2["shipping_limit_date"].dt.date.max()
+recent_date = df1["shipping_limit_date"].dt.date.max()
 rfm_df["recency"] = rfm_df["max_order_timestamp"].apply(lambda x: (recent_date - x).days)
 
 # Menghitung frequency
-rfm_df["frequency"] = df2.groupby("order_id")["order_id"].transform('nunique')
+rfm_df["frequency"] = df1.groupby("order_id")["order_id"].transform('nunique')
 
 # Menghapus kolom max_order_timestamp
 rfm_df.drop("max_order_timestamp", axis=1, inplace=True)
