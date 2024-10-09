@@ -13,17 +13,15 @@ st.write("Direktori kerja saat ini:", os.getcwd())
 filename = 'CustomerRFM_model.sav'
 model = pickle.load(open(filename, 'rb'))
 
-# Convert model into a DataFrame
-customers_df = pd.DataFrame(model)
+# Convert model into DataFrame
+df1 = pd.DataFrame(model)
 
 # Dashboard Title
 st.title("Olist Customer Dashboard")
 
 # Memastikan df1 terdefinisi
-try:
-    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
-except FileNotFoundError:
-    st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+if df1 is None:
+    st.error("Data tidak dapat dimuat dari model.")
     st.stop()
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
