@@ -60,7 +60,19 @@ except Exception as e:
 
 
 # Menambahkan filter untuk memilih kota
-selected_city = st.selectbox('Pilih Kota', df1['customer_city'].unique())
+# Cek apakah df1 terdefinisi dan tidak kosong
+if 'df1' in locals() and not df1.empty:
+    print("Nama kolom dalam df1:")
+    print(df1.columns)
+
+    # Cek apakah kolom customer_city ada
+    if 'customer_city' in df1.columns:
+        selected_city = st.selectbox('Pilih Kota', df1['customer_city'].unique())
+    else:
+        print("Kolom 'customer_city' tidak ditemukan dalam df1.")
+else:
+    print("DataFrame df1 tidak terdefinisi atau kosong.")
+
 
 # Memfilter data berdasarkan kota yang dipilih
 filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
