@@ -4,15 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
 
-# Load dataset
-df1 = pd.read_csv("/content/olist_customers_dataset.csv")
-df2 = pd.read_csv("/content/olist_order_items_dataset.csv")
-df3 = pd.read_csv("/content/olist_orders_dataset.csv")
-df4 = pd.read_csv("/content/olist_order_payments_dataset.csv")
-df5 = pd.read_csv("/content/olist_products_dataset.csv")
-df6 = pd.read_csv("/content/product_category_name_translation.csv")
-df7 = pd.read_csv("/content/olist_sellers_dataset.csv")
-
 # Load RFM model
 filename = 'CustomerRFM_model.sav'
 rfm_df = pickle.load(open(filename, 'rb'))
