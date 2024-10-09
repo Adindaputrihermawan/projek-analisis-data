@@ -5,207 +5,95 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import pickle
-print(os.getcwd())
 
-# Load the dataset
+# Menampilkan direktori kerja saat ini
+st.write(os.getcwd())
+
+# Memuat dataset
 filename = 'CustomerRFM_model.sav'
 model = pickle.load(open(filename, 'rb'))
 
-# Dashboard Title
+# Judul Dashboard
 st.title("Olist Customer Dashboard")
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
-try:
-    customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
-    print("Pengelompokan berhasil!")
-except Exception as e:
-    print(f"Terjadi kesalahan saat melakukan pengelompokan: {e}")
-
+df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Memastikan df1 terdefinisi
+customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
 
 # Memfilter pelanggan yang melakukan pembelian lebih dari satu kali (pelanggan loyal)
-try:
-    loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
-    print("Filter berhasil!")
-except KeyError as e:
-    print(f"Kolom tidak ditemukan: {e}")
-except Exception as e:
-    print(f"Terjadi kesalahan saat melakukan filter: {e}")
-
+loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
 
 # Menghitung jumlah pelanggan loyal per kota
-try:
-    loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
-    print("Pengelompokan berhasil!")
-except KeyError as e:
-    print(f"Kolom tidak ditemukan: {e}")
-except Exception as e:
-    print(f"Terjadi kesalahan saat melakukan pengelompokan: {e}")
-
-# Menamai kolom
-# Cek apakah loyal_customers_per_city terdefinisi dan valid
-try:
-    print("Isi DataFrame loyal_customers_per_city:")
-    print(loyal_customers_per_city)
-    
-    print("Bentuk DataFrame loyal_customers_per_city:", loyal_customers_per_city.shape)
-
-    # Ubah nama kolom jika DataFrame valid
-    if not loyal_customers_per_city.empty and loyal_customers_per_city.shape[1] == 2:
-        loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
-        print("Nama kolom berhasil diubah.")
-    else:
-        print("DataFrame tidak valid untuk mengubah nama kolom.")
-except Exception as e:
-    print(f"Terjadi kesalahan: {e}")
-
+loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
+loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
 
 # Menambahkan filter untuk memilih kota
-# Cek apakah df1 terdefinisi dan tidak kosong
-if 'df1' in locals() and not df1.empty:
-    print("Nama kolom dalam df1:")
-    print(df1.columns)
-
-    # Cek apakah kolom customer_city ada
-    if 'customer_city' in df1.columns:
-        selected_city = st.selectbox('Pilih Kota', df1['customer_city'].unique())
-    else:
-        print("Kolom 'customer_city' tidak ditemukan dalam df1.")
-else:
-    print("DataFrame df1 tidak terdefinisi atau kosong.")
-
+selected_city = st.selectbox('Pilih Kota', df1['customer_city'].unique())
 
 # Memfilter data berdasarkan kota yang dipilih
-# Cek apakah loyal_customers_per_city terdefinisi dan tidak kosong
-if 'loyal_customers_per_city' in locals() and not loyal_customers_per_city.empty:
-    print("Nama kolom dalam loyal_customers_per_city:")
-    print(loyal_customers_per_city.columns)
-
-    # Cek apakah kolom customer_city ada
-    if 'customer_city' in loyal_customers_per_city.columns:
-        if selected_city in loyal_customers_per_city['customer_city'].values:
-            filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
-        else:
-            print(f"Kota '{selected_city}' tidak ditemukan dalam loyal_customers_per_city.")
-            filtered_data = pd.DataFrame()  # Atau inisialisasi dengan DataFrame kosong
-    else:
-        print("Kolom 'customer_city' tidak ditemukan dalam loyal_customers_per_city.")
-else:
-    print("DataFrame loyal_customers_per_city tidak terdefinisi atau kosong.")
+filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
 
 # Menampilkan jumlah pelanggan loyal di kota yang dipilih
-# Misalkan kamu sudah membuat loyal_customers_per_city di bagian sebelumnya
-def display_loyal_customers(loyal_customers_per_city):
-    if not loyal_customers_per_city.empty:
-        selected_city = st.selectbox('Pilih Kota', loyal_customers_per_city['customer_city'].unique())
-        filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
-        
-        if not filtered_data.empty:
-            st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
-        else:
-            st.write(f"Tidak ada pelanggan loyal di {selected_city}.")
-    else:
-        st.write("Tidak ada data pelanggan loyal.")
-
-# Panggil fungsi
-display_loyal_customers(loyal_customers_per_city)
-
-# Cek apakah loyal_customers_per_city terisi
-if not loyal_customers_per_city.empty:
-    selected_city = st.selectbox('Pilih Kota', loyal_customers_per_city['customer_city'].unique())
-    
-    filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
-    
-    # Cek apakah filtered_data tidak kosong
-    if not filtered_data.empty:
-        st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
-    else:
-        st.write(f"Tidak ada pelanggan loyal di {selected_city}.")
-else:
-    st.write("Tidak ada data pelanggan loyal.")
-
-# Cek apakah loyal_customers_per_city terisi
-if not loyal_customers_per_city.empty:
-    selected_city = st.selectbox('Pilih Kota', loyal_customers_per_city['customer_city'].unique())
-    
-    filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
-    
-    # Cek apakah filtered_data tidak kosong
-    if not filtered_data.empty:
-        st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
-    else:
-        st.write(f"Tidak ada pelanggan loyal di {selected_city}.")
-else:
-    st.write("Tidak ada data pelanggan loyal.")
-
-# Menghitung frekuensi pembelian per pelanggan unik
-customer_purchase_freq = df1.groupby('customer_unique_id')['customer_id'].count()
-
+st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
 
 # Menampilkan Histogram Pendapatan
 st.write("Top 10 Customer Cities")
 fig, ax = plt.subplots()
-top_cities = df1['customer_city'].value_counts().nlargest(10) 
-sns.barplot(x=top_cities.values, y=top_cities.index)
+top_cities = df1['customer_city'].value_counts().nlargest(10)
+sns.barplot(x=top_cities.values, y=top_cities.index, ax=ax)
 plt.title('Top 10 Customer Cities')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
 st.write("Top 10 Customer State")
 fig, ax = plt.subplots()
-top_cities = df1['customer_state'].value_counts().nlargest(10) 
-sns.barplot(x=top_cities.values, y=top_cities.index)
+top_states = df1['customer_state'].value_counts().nlargest(10) 
+sns.barplot(x=top_states.values, y=top_states.index, ax=ax)
 plt.title('Top 10 Customer State')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
+# Memuat dan memproses data pembayaran
 df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
 payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
 payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
 
-# Streamlit App
+# Streamlit App untuk Tipe Pembayaran
 st.title("Tipe Pembayaran")
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(x="unique_orders", y="payment_type", data=payment_data, palette="viridis")
+sns.barplot(x="unique_orders", y="payment_type", data=payment_data, palette="viridis", ax=ax)
 plt.title('Tipe Pembayaran')
 plt.xlabel('Number of Unique Orders')
 plt.ylabel('Payment Type')
 st.pyplot(fig)
 
+# Memuat dan memproses data produk
 df5 = pd.read_csv("dataset/olist_products_dataset.csv")
 df6 = pd.read_csv("dataset/product_category_name_translation.csv")
-df10 = pd.merge(
-    left=df5,
-    right=df6,
-    how="left",
-    left_on="product_category_name",
-    right_on="product_category_name"
-)
+df10 = pd.merge(df5, df6, how="left", left_on="product_category_name", right_on="product_category_name")
 
 sum_order_items_df = df10.groupby("product_category_name_english")["product_id"].count().reset_index()
-sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
-sum_order_items_df = sum_order_items_df.sort_values(by="products", ascending=False)
+sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"}).sort_values(by="products", ascending=False)
 top_product = sum_order_items_df.head(5)
 
-# Streamlit App
+# Streamlit App untuk Top 5 Product Sales
 st.title("Top 5 Product Sales")
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(18, 6))
-colors = ["#068DA9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
-sns.barplot(x="products", y="product_category_name_english", data=top_product, palette=colors)
+colors = ["#068DA9"] + ["#D3D3D3"] * 4  # Mengatur warna
+sns.barplot(x="products", y="product_category_name_english", data=top_product, palette=colors, ax=ax)
 plt.title('Top 5 Penjualan Tertinggi')
-plt.xlabel('Number of Customers')
+plt.xlabel('Number of Products')
 plt.ylabel('Product Category')
-
-# Display plot in Streamlit
 st.pyplot(fig)
 
-df2 = pd.read_csv('dataset/olist_order_items_dataset.csv')
-# Mengatur judul dashboard
+# Mengatur judul dashboard untuk pendapatan tiap seller
 st.title("Pendapatan tiap seller")
 st.write("Analisis pendapatan tiap seller ")
+
 # Filter seller secara interaktif
 unique_sellers = df2['seller_id'].unique()
 selected_seller = st.selectbox('Pilih Seller', unique_sellers)
@@ -219,6 +107,7 @@ total_items_sold = filtered_df['order_item_id'].count()
 total_revenue = filtered_df['price'].sum()
 total_freight = filtered_df['freight_value'].sum()
 
+# Menampilkan metrik
 st.metric("Total Pesanan", total_orders)
 st.metric("Total Item Terjual", total_items_sold)
 st.metric("Total Pendapatan (BRL)", f"{total_revenue:,.2f}")
@@ -233,8 +122,7 @@ ax.set_xlabel('Harga Produk (BRL)')
 ax.set_ylabel('Frekuensi')
 st.pyplot(fig)
 
-
-# Mengatur judul dashboard
+# Mengatur judul dashboard untuk Analisis RFM
 st.title("Analisis RFM")
 st.write("Analisis Recency, Frequency, dan Monetary dari data penjualan.")
 
