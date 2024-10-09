@@ -42,7 +42,22 @@ except Exception as e:
     print(f"Terjadi kesalahan saat melakukan pengelompokan: {e}")
 
 # Menamai kolom
-loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
+# Cek apakah loyal_customers_per_city terdefinisi dan valid
+try:
+    print("Isi DataFrame loyal_customers_per_city:")
+    print(loyal_customers_per_city)
+    
+    print("Bentuk DataFrame loyal_customers_per_city:", loyal_customers_per_city.shape)
+
+    # Ubah nama kolom jika DataFrame valid
+    if not loyal_customers_per_city.empty and loyal_customers_per_city.shape[1] == 2:
+        loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
+        print("Nama kolom berhasil diubah.")
+    else:
+        print("DataFrame tidak valid untuk mengubah nama kolom.")
+except Exception as e:
+    print(f"Terjadi kesalahan: {e}")
+
 
 # Menambahkan filter untuk memilih kota
 selected_city = st.selectbox('Pilih Kota', df1['customer_city'].unique())
