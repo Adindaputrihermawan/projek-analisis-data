@@ -4,6 +4,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import pickle
 print(os.getcwd())
 
 # Load the dataset
