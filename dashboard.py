@@ -16,16 +16,15 @@ model = pickle.load(open(filename, 'rb'))
 # Convert model into DataFrame
 df1 = pd.DataFrame(model)
 
-# Dashboard Title
-st.title("Olist Customer Dashboard")
-
-# Memastikan df1 terdefinisi
-if df1 is None:
-    st.error("Data tidak dapat dimuat dari model.")
-    st.stop()
+# Cek kolom yang ada dalam df1
+st.write("Kolom yang ada dalam DataFrame:", df1.columns.tolist())
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
-customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
+if 'customer_unique_id' in df1.columns and 'customer_city' in df1.columns and 'customer_id' in df1.columns:
+    customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
+else:
+    st.error("Kolom 'customer_unique_id', 'customer_city', atau 'customer_id' tidak ditemukan dalam DataFrame.")
+    st.stop()
 
 # Memfilter pelanggan yang melakukan pembelian lebih dari satu kali (pelanggan loyal)
 loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
