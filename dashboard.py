@@ -33,7 +33,13 @@ except Exception as e:
 
 
 # Menghitung jumlah pelanggan loyal per kota
-loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
+try:
+    loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
+    print("Pengelompokan berhasil!")
+except KeyError as e:
+    print(f"Kolom tidak ditemukan: {e}")
+except Exception as e:
+    print(f"Terjadi kesalahan saat melakukan pengelompokan: {e}")
 
 # Menamai kolom
 loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
