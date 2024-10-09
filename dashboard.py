@@ -3,8 +3,11 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 import pickle
 
+# Menampilkan direktori kerja saat ini
+st.write("Direktori kerja saat ini:", os.getcwd())
 
 # Load the model
 filename = 'CustomerRFM_model.sav'
@@ -13,8 +16,12 @@ model = pickle.load(open(filename, 'rb'))
 # Dashboard Title
 st.title("Olist Customer Dashboard")
 
-# Memastikan df1 terdefinisi try:     
-df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai except FileNotFoundError:     st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")     st.stop()
+# Memastikan df1 terdefinisi
+try:
+    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
+except FileNotFoundError:
+    st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
 customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
@@ -201,5 +208,4 @@ plt.tight_layout()
 st.pyplot(fig)
 
 # Menampilkan ringkasan statistik RFM
-st.subheader("Ringkasan Statistik RFM")
-st.write(rfm_df.describe())
+st.subheader("Ring
