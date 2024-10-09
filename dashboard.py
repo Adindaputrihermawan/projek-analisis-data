@@ -208,4 +208,6 @@ plt.tight_layout()
 st.pyplot(fig)
 
 # Menampilkan ringkasan statistik RFM
-st.subheader("Ring
+st.subheader("Ringkasan Statistik RFM")
+st.write(rfm_df.describe())
+
