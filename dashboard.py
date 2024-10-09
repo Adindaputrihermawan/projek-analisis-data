@@ -111,6 +111,20 @@ if not loyal_customers_per_city.empty:
 else:
     st.write("Tidak ada data pelanggan loyal.")
 
+# Cek apakah loyal_customers_per_city terisi
+if not loyal_customers_per_city.empty:
+    selected_city = st.selectbox('Pilih Kota', loyal_customers_per_city['customer_city'].unique())
+    
+    filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
+    
+    # Cek apakah filtered_data tidak kosong
+    if not filtered_data.empty:
+        st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
+    else:
+        st.write(f"Tidak ada pelanggan loyal di {selected_city}.")
+else:
+    st.write("Tidak ada data pelanggan loyal.")
+
 # Menghitung frekuensi pembelian per pelanggan unik
 customer_purchase_freq = df1.groupby('customer_unique_id')['customer_id'].count()
 
