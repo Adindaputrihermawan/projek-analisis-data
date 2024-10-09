@@ -13,6 +13,9 @@ st.write("Direktori kerja saat ini:", os.getcwd())
 filename = 'CustomerRFM_model.sav'
 model = pickle.load(open(filename, 'rb'))
 
+# Convert model into a DataFrame
+customers_df = pd.DataFrame(model)
+
 # Dashboard Title
 st.title("Olist Customer Dashboard")
 
@@ -210,4 +213,3 @@ st.pyplot(fig)
 # Menampilkan ringkasan statistik RFM
 st.subheader("Ringkasan Statistik RFM")
 st.write(rfm_df.describe())
-
