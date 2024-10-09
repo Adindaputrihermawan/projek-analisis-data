@@ -94,8 +94,20 @@ else:
 
 # Menampilkan jumlah pelanggan loyal di kota yang dipilih
 # Misalkan kamu sudah membuat loyal_customers_per_city di bagian sebelumnya
-loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
-loyal_customers_per_city.columns = ['customer_city', 'loyal_customers']
+def display_loyal_customers(loyal_customers_per_city):
+    if not loyal_customers_per_city.empty:
+        selected_city = st.selectbox('Pilih Kota', loyal_customers_per_city['customer_city'].unique())
+        filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
+        
+        if not filtered_data.empty:
+            st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
+        else:
+            st.write(f"Tidak ada pelanggan loyal di {selected_city}.")
+    else:
+        st.write("Tidak ada data pelanggan loyal.")
+
+# Panggil fungsi
+display_loyal_customers(loyal_customers_per_city)
 
 # Cek apakah loyal_customers_per_city terisi
 if not loyal_customers_per_city.empty:
