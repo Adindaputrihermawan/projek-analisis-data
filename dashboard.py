@@ -15,7 +15,7 @@ st.title("Olist Customer Dashboard")
 
 # Memastikan df1 terdefinisi
 try:
-    df1 = pd.read_csv('olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
+    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
 except FileNotFoundError:
     st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
     st.stop()
