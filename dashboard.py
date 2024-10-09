@@ -7,17 +7,23 @@ import os
 import pickle
 
 # Menampilkan direktori kerja saat ini
-st.write(os.getcwd())
+st.write("Direktori kerja saat ini:", os.getcwd())
 
-# Memuat dataset
+# Load the model
 filename = 'CustomerRFM_model.sav'
 model = pickle.load(open(filename, 'rb'))
 
-# Judul Dashboard
+# Dashboard Title
 st.title("Olist Customer Dashboard")
 
+# Memastikan df1 terdefinisi
+try:
+    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
+except FileNotFoundError:
+    st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
-df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Memastikan df1 terdefinisi
 customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
 
 # Memfilter pelanggan yang melakukan pembelian lebih dari satu kali (pelanggan loyal)
@@ -47,18 +53,22 @@ st.pyplot(fig)
 
 st.write("Top 10 Customer State")
 fig, ax = plt.subplots()
-top_states = df1['customer_state'].value_counts().nlargest(10) 
+top_states = df1['customer_state'].value_counts().nlargest(10)
 sns.barplot(x=top_states.values, y=top_states.index, ax=ax)
-plt.title('Top 10 Customer State')
+plt.title('Top 10 Customer States')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
-# Memuat dan memproses data pembayaran
-df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
+try:
+    df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_payments_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
 payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
 payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
 
-# Streamlit App untuk Tipe Pembayaran
+# Streamlit App
 st.title("Tipe Pembayaran")
 
 # Create the plot
@@ -69,28 +79,47 @@ plt.xlabel('Number of Unique Orders')
 plt.ylabel('Payment Type')
 st.pyplot(fig)
 
-# Memuat dan memproses data produk
-df5 = pd.read_csv("dataset/olist_products_dataset.csv")
-df6 = pd.read_csv("dataset/product_category_name_translation.csv")
-df10 = pd.merge(df5, df6, how="left", left_on="product_category_name", right_on="product_category_name")
+try:
+    df5 = pd.read_csv("dataset/olist_products_dataset.csv")
+    df6 = pd.read_csv("dataset/product_category_name_translation.csv")
+except FileNotFoundError:
+    st.error("File 'olist_products_dataset.csv' atau 'product_category_name_translation.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
+df10 = pd.merge(
+    left=df5,
+    right=df6,
+    how="left",
+    left_on="product_category_name",
+    right_on="product_category_name"
+)
 
 sum_order_items_df = df10.groupby("product_category_name_english")["product_id"].count().reset_index()
-sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"}).sort_values(by="products", ascending=False)
+sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
+sum_order_items_df = sum_order_items_df.sort_values(by="products", ascending=False)
 top_product = sum_order_items_df.head(5)
 
-# Streamlit App untuk Top 5 Product Sales
+# Streamlit App
 st.title("Top 5 Product Sales")
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(18, 6))
-colors = ["#068DA9"] + ["#D3D3D3"] * 4  # Mengatur warna
+colors = ["#068DA9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
 sns.barplot(x="products", y="product_category_name_english", data=top_product, palette=colors, ax=ax)
 plt.title('Top 5 Penjualan Tertinggi')
-plt.xlabel('Number of Products')
+plt.xlabel('Number of Customers')
 plt.ylabel('Product Category')
+
+# Display plot in Streamlit
 st.pyplot(fig)
 
-# Mengatur judul dashboard untuk pendapatan tiap seller
+try:
+    df2 = pd.read_csv('dataset/olist_order_items_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_items_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
+# Mengatur judul dashboard
 st.title("Pendapatan tiap seller")
 st.write("Analisis pendapatan tiap seller ")
 
@@ -107,7 +136,6 @@ total_items_sold = filtered_df['order_item_id'].count()
 total_revenue = filtered_df['price'].sum()
 total_freight = filtered_df['freight_value'].sum()
 
-# Menampilkan metrik
 st.metric("Total Pesanan", total_orders)
 st.metric("Total Item Terjual", total_items_sold)
 st.metric("Total Pendapatan (BRL)", f"{total_revenue:,.2f}")
@@ -122,7 +150,7 @@ ax.set_xlabel('Harga Produk (BRL)')
 ax.set_ylabel('Frekuensi')
 st.pyplot(fig)
 
-# Mengatur judul dashboard untuk Analisis RFM
+# Mengatur judul dashboard
 st.title("Analisis RFM")
 st.write("Analisis Recency, Frequency, dan Monetary dari data penjualan.")
 
@@ -180,5 +208,4 @@ plt.tight_layout()
 st.pyplot(fig)
 
 # Menampilkan ringkasan statistik RFM
-st.subheader("Ringkasan Statistik RFM")
-st.write(rfm_df.describe())
+st.subheader("Ring
