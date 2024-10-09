@@ -7,7 +7,8 @@ import os
 print(os.getcwd())
 
 # Load the dataset
-df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  
+df1 = 'CustomerRFM_model.sav'
+model = pickle.load(open(df1, 'rb'))
 
 # Dashboard Title
 st.title("Olist Customer Dashboard")
