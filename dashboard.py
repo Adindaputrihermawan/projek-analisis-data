@@ -75,7 +75,22 @@ else:
 
 
 # Memfilter data berdasarkan kota yang dipilih
-filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
+# Cek apakah loyal_customers_per_city terdefinisi dan tidak kosong
+if 'loyal_customers_per_city' in locals() and not loyal_customers_per_city.empty:
+    print("Nama kolom dalam loyal_customers_per_city:")
+    print(loyal_customers_per_city.columns)
+
+    # Cek apakah kolom customer_city ada
+    if 'customer_city' in loyal_customers_per_city.columns:
+        if selected_city in loyal_customers_per_city['customer_city'].values:
+            filtered_data = loyal_customers_per_city[loyal_customers_per_city['customer_city'] == selected_city]
+        else:
+            print(f"Kota '{selected_city}' tidak ditemukan dalam loyal_customers_per_city.")
+            filtered_data = pd.DataFrame()  # Atau inisialisasi dengan DataFrame kosong
+    else:
+        print("Kolom 'customer_city' tidak ditemukan dalam loyal_customers_per_city.")
+else:
+    print("DataFrame loyal_customers_per_city tidak terdefinisi atau kosong.")
 
 # Menampilkan jumlah pelanggan loyal di kota yang dipilih
 st.write(f"Pelanggan Loyal di {selected_city}: {filtered_data['loyal_customers'].values[0]}")
