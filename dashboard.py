@@ -3,11 +3,8 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 import pickle
 
-# Menampilkan direktori kerja saat ini
-st.write("Direktori kerja saat ini:", os.getcwd())
 
 # Load the model
 filename = 'CustomerRFM_model.sav'
