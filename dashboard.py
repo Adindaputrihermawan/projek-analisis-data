@@ -3,7 +3,11 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 import pickle
+
+# Menampilkan direktori kerja saat ini
+st.write("Direktori kerja saat ini:", os.getcwd())
 
 # Load the model
 filename = 'CustomerRFM_model.sav'
@@ -12,8 +16,12 @@ model = pickle.load(open(filename, 'rb'))
 # Dashboard Title
 st.title("Olist Customer Dashboard")
 
-# Pastikan df1, df2, df4, df5, df6, dan df10 sudah terdefinisi sebelumnya
-# Misalnya, df1, df2, df4, df5, df6, df10 adalah DataFrame yang telah ada
+# Memastikan df1 terdefinisi
+try:
+    df1 = pd.read_csv('dataset/olist_customers_dataset.csv')  # Ganti dengan nama file yang sesuai
+except FileNotFoundError:
+    st.error("File 'olist_customers_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
 
 # Menggabungkan frekuensi pembelian dengan kota pelanggan
 customer_loyalty = df1.groupby(['customer_unique_id', 'customer_city'])['customer_id'].count().reset_index()
@@ -51,10 +59,17 @@ plt.title('Top 10 Customer States')
 plt.xlabel('Number of Customers')
 st.pyplot(fig)
 
-# Tipe Pembayaran
-st.title("Tipe Pembayaran")
+try:
+    df4 = pd.read_csv('dataset/olist_order_payments_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_payments_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
 payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
 payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
+
+# Streamlit App
+st.title("Tipe Pembayaran")
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -64,12 +79,28 @@ plt.xlabel('Number of Unique Orders')
 plt.ylabel('Payment Type')
 st.pyplot(fig)
 
-# Top 5 Product Sales
-st.title("Top 5 Product Sales")
+try:
+    df5 = pd.read_csv("dataset/olist_products_dataset.csv")
+    df6 = pd.read_csv("dataset/product_category_name_translation.csv")
+except FileNotFoundError:
+    st.error("File 'olist_products_dataset.csv' atau 'product_category_name_translation.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
+df10 = pd.merge(
+    left=df5,
+    right=df6,
+    how="left",
+    left_on="product_category_name",
+    right_on="product_category_name"
+)
+
 sum_order_items_df = df10.groupby("product_category_name_english")["product_id"].count().reset_index()
 sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
 sum_order_items_df = sum_order_items_df.sort_values(by="products", ascending=False)
 top_product = sum_order_items_df.head(5)
+
+# Streamlit App
+st.title("Top 5 Product Sales")
 
 # Create the plot
 fig, ax = plt.subplots(figsize=(18, 6))
@@ -78,9 +109,17 @@ sns.barplot(x="products", y="product_category_name_english", data=top_product, p
 plt.title('Top 5 Penjualan Tertinggi')
 plt.xlabel('Number of Customers')
 plt.ylabel('Product Category')
+
+# Display plot in Streamlit
 st.pyplot(fig)
 
-# Pendapatan tiap seller
+try:
+    df2 = pd.read_csv('dataset/olist_order_items_dataset.csv')
+except FileNotFoundError:
+    st.error("File 'olist_order_items_dataset.csv' tidak ditemukan di direktori 'dataset'.")
+    st.stop()
+
+# Mengatur judul dashboard
 st.title("Pendapatan tiap seller")
 st.write("Analisis pendapatan tiap seller ")
 
@@ -111,15 +150,18 @@ ax.set_xlabel('Harga Produk (BRL)')
 ax.set_ylabel('Frekuensi')
 st.pyplot(fig)
 
-# Analisis RFM
+# Mengatur judul dashboard
 st.title("Analisis RFM")
 st.write("Analisis Recency, Frequency, dan Monetary dari data penjualan.")
 
+# Memuat dataset
+df2['shipping_limit_date'] = pd.to_datetime(df2['shipping_limit_date'], errors='coerce')
+
 # Menghitung RFM
 rfm_df = df2.groupby(by="order_id", as_index=False).agg({
-    "shipping_limit_date": "max",
-    "order_id": "nunique",
-    "price": "sum"
+    "shipping_limit_date": "max",  # Mengambil tanggal order terakhir
+    "order_id": "nunique",  # Menghitung jumlah order (order_id)
+    "price": "sum"  # Menghitung jumlah revenue yang dihasilkan
 })
 
 rfm_df.columns = ["customer_id", "max_order_timestamp", "monetary"]
@@ -164,4 +206,8 @@ ax[2].set_ylabel('Jumlah Pelanggan')
 
 plt.tight_layout()
 st.pyplot(fig)
+
+# Menampilkan ringkasan statistik RFM
+st.subheader("Ringkasan Statistik RFM")
+st.write(rfm_df.describe())
 
