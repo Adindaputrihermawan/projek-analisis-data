@@ -23,7 +23,14 @@ except Exception as e:
 
 
 # Memfilter pelanggan yang melakukan pembelian lebih dari satu kali (pelanggan loyal)
-loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
+try:
+    loyal_customers = customer_loyalty[customer_loyalty['customer_id'] > 1]
+    print("Filter berhasil!")
+except KeyError as e:
+    print(f"Kolom tidak ditemukan: {e}")
+except Exception as e:
+    print(f"Terjadi kesalahan saat melakukan filter: {e}")
+
 
 # Menghitung jumlah pelanggan loyal per kota
 loyal_customers_per_city = loyal_customers.groupby('customer_city')['customer_unique_id'].count().reset_index()
