@@ -1,65 +1,85 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pickle
 
-# Load RFM model
+
+# Load the pre-trained model from 'CustomerRFM_model.sav'
 filename = 'CustomerRFM_model.sav'
-rfm_df = pickle.load(open(filename, 'rb'))
+try:
+    model = pickle.load(open(filename, 'rb'))
+    st.success(f"Model '{filename}' berhasil dimuat.")
+except FileNotFoundError:
+    st.error(f"File model '{filename}' tidak ditemukan.")
+    st.stop()
 
-# Title of the application
-st.title("Analisis Data E-Commerce Olist")
+# Dashboard Title
+st.title("Olist Customer Dashboard")
 
-# Menu selection
-options = st.sidebar.selectbox("Pilih Analisis:", ["Item Terlaris", "Demografi Pelanggan", "Tipe Pembayaran", "RFM Analysis"])
+# Misalkan data pelanggan dimasukkan sebagai input manual atau dari sumber lain (bukan CSV)
+st.header("Masukkan Data Pelanggan")
 
-if options == "Item Terlaris":
-    st.header("Item dengan Tingkat Penjualan Tertinggi")
-    
-    # Calculate top selling items
-    sum_order_items_df = df2.groupby("product_id")["order_id"].count().reset_index()
-    sum_order_items_df = sum_order_items_df.sort_values(by="order_id", ascending=False).head(5)
-    
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="order_id", y="product_id", data=sum_order_items_df, palette="viridis")
-    plt.title('Top 5 Penjualan Tertinggi')
-    plt.xlabel('Jumlah Penjualan')
-    plt.ylabel('ID Produk')
-    st.pyplot(fig)
+# Input fitur dari pengguna
+customer_id = st.text_input("Masukkan Customer ID")
+recency = st.number_input("Masukkan Recency (hari sejak pembelian terakhir)", min_value=0)
+frequency = st.number_input("Masukkan Frequency (jumlah pembelian)", min_value=1)
+monetary = st.number_input("Masukkan Monetary (total pendapatan)", min_value=0.0)
 
-elif options == "Demografi Pelanggan":
-    st.header("Demografi Pelanggan")
-    
-    # Customer city distribution
-    top_cities = df1['customer_city'].value_counts().nlargest(10)
-    
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x=top_cities.values, y=top_cities.index)
-    plt.title('Top 10 Kota Pelanggan')
-    plt.xlabel('Jumlah Pelanggan')
-    st.pyplot(fig)
+# Memastikan semua input sudah diberikan
+if st.button("Prediksi Kategori Pelanggan"):
+    if customer_id and recency >= 0 and frequency > 0 and monetary >= 0:
+        # Membuat dataframe dari input pengguna
+        input_data = pd.DataFrame({
+            "customer_id": [customer_id],
+            "recency": [recency],
+            "frequency": [frequency],
+            "monetary": [monetary]
+        })
 
-elif options == "Tipe Pembayaran":
-    st.header("Tipe Pembayaran yang Sering Digunakan")
-    
-    payment_data = df4.groupby(by="payment_type").order_id.nunique().sort_values(ascending=False).reset_index()
-    payment_data = payment_data.rename(columns={"order_id": "unique_orders"})
-    
-    # Plotting
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x="unique_orders", y="payment_type", data=payment_data, palette="viridis")
-    plt.title('Jumlah Pesanan Unik per Tipe Pembayaran')
-    plt.xlabel('Jumlah Pesanan Unik')
-    plt.ylabel('Tipe Pembayaran')
-    st.pyplot(fig)
+        # Menampilkan input data
+        st.write("Data Pelanggan:")
+        st.dataframe(input_data)
 
-elif options == "RFM Analysis":
-    st.header("Analisis RFM")
-    
-    st.write(rfm_df)
+        # Melakukan prediksi dengan model
+        prediction = model.predict(input_data[['recency', 'frequency', 'monetary']])
 
-# Footer
-st.write("Aplikasi ini menggunakan dataset Olist Brazilian E-Commerce dan melakukan analisis untuk memahami pola pembelian.")
+        # Menampilkan hasil prediksi
+        st.subheader(f"Prediksi Kategori Pelanggan: {prediction[0]}")
+    else:
+        st.error("Pastikan semua input sudah terisi dengan benar.")
+
+# Bagian untuk menampilkan distribusi data RFM (misalkan dari model atau data internal)
+st.subheader("Distribusi Data RFM (Recency, Frequency, Monetary)")
+
+# Simulasi data untuk distribusi (untuk visualisasi)
+simulated_rfm_data = pd.DataFrame({
+    "recency": [30, 45, 12, 60, 5, 20, 15],
+    "frequency": [3, 5, 2, 1, 10, 4, 3],
+    "monetary": [300, 500, 150, 100, 700, 350, 200]
+})
+
+# Visualisasi histogram untuk Recency, Frequency, dan Monetary
+fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+
+# Recency distribution
+sns.histplot(simulated_rfm_data['recency'], bins=30, ax=ax[0], color='skyblue')
+ax[0].set_title('Distribusi Recency')
+ax[0].set_xlabel('Hari Sejak Pembelian Terakhir')
+ax[0].set_ylabel('Jumlah Pelanggan')
+
+# Frequency distribution
+sns.histplot(simulated_rfm_data['frequency'], bins=30, ax=ax[1], color='salmon')
+ax[1].set_title('Distribusi Frequency')
+ax[1].set_xlabel('Jumlah Pembelian')
+ax[1].set_ylabel('Jumlah Pelanggan')
+
+# Monetary distribution
+sns.histplot(simulated_rfm_data['monetary'], bins=30, ax=ax[2], color='lightgreen')
+ax[2].set_title('Distribusi Monetary')
+ax[2].set_xlabel('Total Pendapatan')
+ax[2].set_ylabel('Jumlah Pelanggan')
+
+# Menampilkan plot
+st.pyplot(fig)
