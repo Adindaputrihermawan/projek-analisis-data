@@ -83,3 +83,44 @@ ax[2].set_ylabel('Jumlah Pelanggan')
 
 # Menampilkan plot
 st.pyplot(fig)
+
+# ----------- Tambahan Visualisasi Menarik untuk Dashboard ----------- #
+
+# Misalkan kita memiliki dataset produk yang telah di-load ke dalam dataframe df_products
+df_products = pd.DataFrame({
+    'product_category_name_english': ['bed bath table', 'health beauty', 'sports leisure', 'furniture decor', 'computers accessories'],
+    'sales': [3029, 2001, 1580, 1250, 980]
+})
+
+st.subheader("Top 5 Produk dengan Penjualan Tertinggi")
+
+# Bar plot menggunakan Plotly
+fig = px.bar(df_products, x='product_category_name_english', y='sales', 
+             color='sales', labels={'product_category_name_english': 'Kategori Produk', 'sales': 'Jumlah Penjualan'},
+             title='Top 5 Produk dengan Penjualan Tertinggi')
+st.plotly_chart(fig)
+
+# ---------- Visualisasi Tipe Pembayaran yang Sering Digunakan ---------- #
+df_payments = pd.DataFrame({
+    'payment_type': ['credit_card', 'boleto', 'voucher', 'debit_card'],
+    'unique_orders': [58770, 19784, 5772, 1523]
+})
+
+st.subheader("Tipe Pembayaran yang Paling Sering Digunakan")
+
+fig = px.pie(df_payments, names='payment_type', values='unique_orders', 
+             title='Distribusi Tipe Pembayaran yang Sering Digunakan')
+st.plotly_chart(fig)
+
+# ---------- Visualisasi Distribusi Pelanggan Berdasarkan Kota ---------- #
+df_customers = pd.DataFrame({
+    'customer_city': ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Brasília', 'Curitiba'],
+    'customer_count': [1574, 1234, 987, 654, 432]
+})
+
+st.subheader("Distribusi Pelanggan Berdasarkan Kota")
+
+fig = px.bar(df_customers, x='customer_city', y='customer_count', 
+             title='Top 5 Kota dengan Jumlah Pelanggan Terbanyak', 
+             labels={'customer_city': 'Kota', 'customer_count': 'Jumlah Pelanggan'})
+st.plotly_chart(fig)
